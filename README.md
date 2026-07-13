@@ -1,92 +1,89 @@
-# 👨🏻‍💻Customer Behavior Data Analyst Portfolio Project
-This project represents a complete, industry standard, end-to-end data analytics workflow, designed to mirror the real responsibilities of professional analysts in modern business environments. The project encompasses all critical stages of data analysis, from data preparation and modeling to insight generation, visualization, and reporting.
+# Customer Shopping Behavior Analysis
 
-This project is perfect for:
-- 📊 Data Analyst aspirants who want to build a strong **Portfolio Project** for interviews and LinkedIn
-- 📚 Anyone learning Python, SQL, and Power BI
-- 💼 Professionals preparing for interviews in Data Analytics, Data Science or Product Analytics roles
+An end-to-end retail analytics project that takes 3,900 raw customer transactions through cleaning and feature engineering in Python, structured business-question analysis in SQL, and an interactive Power BI dashboard — wrapping up in a written report and stakeholder presentation.
 
-# **🎥 Watch this [YouTube video](https://www.youtube.com/watch?v=5PrZvPeUw60&list=PLAx-M6Di0SisFJ1rv5M_FRHUlGA5rtUf_&index=3) to implement the full project from scratch:**  
-[![Advanced Data Analysis Portfolio Project using Retail Customer Data](https://github.com/user-attachments/assets/abbb6371-a0b2-4bec-a304-7c7da98658b6)](https://www.youtube.com/watch?v=x8dfQkKTyP0&list=PLAx-M6Di0SisFJ1rv5M_FRHUlGA5rtUf_&index=2)
-🔗 *Link to Video:* [Watch on Youtube](https://www.youtube.com/watch?v=5PrZvPeUw60&list=PLAx-M6Di0SisFJ1rv5M_FRHUlGA5rtUf_&index=3)
+## Business problem
 
+A retail company wants to understand shifts in customer purchasing patterns across demographics, product categories, and channels, and to know which levers — discounts, reviews, seasonality, payment method — actually drive repeat purchases and loyalty. The goal of this project is to turn the raw transaction log into concrete, defensible recommendations a marketing or product team could act on.
 
-## 📌 Project Overview
-The goal of this project is to simulate a corporate-grade end-to-end data analytics workflow, demonstrating the ability to translate raw data into strategic business intelligence by:
+## Dataset
 
-✅ Data Preparation,Modeling & Exploratory Data Analysis (Python): Clean and transform the raw dataset for analysis.
+`customer_shopping_behavior.csv` — 3,900 rows, 18 columns:
 
-✅ Data Analysis (SQL): Simulate business transactions, and run queries to extract insights on customer segments, loyalty, and purchase drivers.
+| Column | Description |
+|---|---|
+| Customer ID | Unique customer identifier |
+| Age | Customer age |
+| Gender | Customer gender |
+| Item Purchased | Product name |
+| Category | Product category (Clothing, Footwear, Outerwear, Accessories) |
+| Purchase Amount (USD) | Transaction value |
+| Location | US state |
+| Size / Color / Season | Product attributes |
+| Review Rating | 1–5 product rating (37 missing values, imputed) |
+| Subscription Status | Whether the customer is subscribed |
+| Shipping Type | Standard, Express, Next Day Air, Free Shipping, etc. |
+| Discount Applied / Promo Code Used | Whether a discount/promo was used on the order (found to be fully redundant — see below) |
+| Previous Purchases | Count of prior orders by that customer |
+| Payment Method | Card, PayPal, Venmo, Cash, etc. |
+| Frequency of Purchases | Self-reported cadence (Weekly, Fortnightly, Monthly, ...) |
 
-✅ Visualization & Insights (Power BI): Build an interactive dashboard that highlights key patterns and trends, enabling stakeholders to make data-driven decisions.
+## Repo contents
 
-✅ Report and Presentation: Write a clear project report summarizing your key findings and business recommendations. Prepare a presentation that visually communicates insights and actionable recommendations to stakeholders.
+| File | Purpose |
+|---|---|
+| `Customer_Shopping_Behavior_Analysis.ipynb` | Data cleaning, feature engineering, and DB load in Python (pandas + SQLAlchemy) |
+| `customer_behavior_sql_queries.sql` | 10 business-question SQL queries against the cleaned data |
+| `customer_behavior_dashboard.pbix` | Power BI dashboard |
+| `Customer Shopping Behavior Analysis.pdf` | Written project report |
+| `Customer-Shopping-Behavior-Analysis.pptx` | Stakeholder presentation |
+| `Business Problem  Document.pdf` | Original business problem brief and deliverables |
+| `customer_shopping_behavior.csv` | Raw dataset |
 
-![Project Workflow](https://github.com/user-attachments/assets/8bbd5dc9-eb6c-40c1-8f19-c08b4107f654)
+## Pipeline
 
-## 🛠️ How to Use This Project
+1. **Python (cleaning + feature engineering)**
+   - Imputed 37 missing `Review Rating` values with the median rating for that product's category (not the global median), to avoid skewing ratings across categories with different baseline satisfaction.
+   - Standardized all columns to snake_case (`purchase_amount_(usd)` → `purchase_amount`, etc.).
+   - Engineered `age_group` (quartile-based bins: Young Adult / Adult / Middle-aged / Senior) and `purchase_frequency_days` (mapping cadence labels like "Fortnightly" to a numeric day count) to make the categorical fields usable in aggregate SQL queries.
+   - Verified `discount_applied` and `promo_code_used` were identical for every row and dropped the duplicate column.
+   - Loaded the cleaned frame into PostgreSQL (with example connection code for MySQL and SQL Server as alternatives) via SQLAlchemy.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/amlanmohanty1/customer-trends-data-analysis-SQL-Python-PowerBI.git
-   cd customer-trends-data-analysis-SQL-Python-PowerBI
-   ```
-2. **Open Customer_Shopping_Behavior_Analysis.ipynb notebook**
+2. **SQL (business questions)** — answered directly in `customer_behavior_sql_queries.sql`:
+   - Revenue split by gender
+   - Customers who used a discount but still spent above the average purchase amount
+   - Top 5 products by average review rating
+   - Standard vs. Express shipping: average spend comparison
+   - Subscribers vs. non-subscribers: spend and revenue comparison
+   - Top 5 products most dependent on discounts
+   - Customer segmentation into New / Returning / Loyal by purchase history
+   - Top 3 products per category by order volume
+   - Whether repeat buyers (>5 previous purchases) are more likely to subscribe
+   - Revenue contribution by age group
 
-    This file contains:
+3. **Power BI** — `customer_behavior_dashboard.pbix` visualizes the above for a non-technical audience.
 
-      - Data Import
+## Key recommendations (from the written report)
 
-      - Data exploration
+- **Boost subscriptions** by promoting exclusive subscriber benefits.
+- **Build a loyalty program** to move repeat buyers into the "Loyal" segment.
+- **Revisit discount policy** — some products sell almost entirely on discount, which caps margin.
+- **Lead marketing with top-rated, best-selling products** rather than spreading spend evenly across the catalog.
+- **Target high-revenue age groups and Express-shipping users** specifically, rather than broad demographic campaigns.
 
-      - Data cleaning
+## Running it yourself
 
-      - Connection to SQL Database
-  
-3. **Load the data from Python notebook into MySQL/PostgreSQL/MS SQL Server**
+```bash
+pip install pandas sqlalchemy psycopg2-binary
+```
 
-      - Create a database in SQL
+Open `Customer_Shopping_Behavior_Analysis.ipynb` and run top to bottom. The notebook loads `customer_shopping_behavior.csv`, cleans it, and (optionally) pushes the result into a local Postgres/MySQL/SQL Server instance so you can run `customer_behavior_sql_queries.sql` against it.
 
-      - Run Python code to load data into SQL database
-  
-      - Open **customer_behavior_sql_queries.sql**
-  
-      - Answer Business Questions using SQL Queries 
-      
-4. **Connect the SQL Database to Power BI**
+**Before you push this further:** the notebook currently has DB credentials (user/password/host) hardcoded inline for the PostgreSQL/MySQL/SQL Server connection cells. That's fine for a local one-off run, but swap it for environment variables (e.g. `os.environ["DB_PASSWORD"]`) or a `.env` file (git-ignored) before this goes anywhere more permanent — right now anyone with the notebook has the credentials that were used when it was written.
 
-      - Open **customer_behavior_dashboard.pbix**
-   
-      - Create interactive dashboard in Power BI
-  
-6. **Create Project Report and Presentation**
+## Possible next steps
 
-      - Create project report
-   
-      - Build presentation deck using Gamma AI
-  
-7. **Follow along with the YouTube video for full walkthrough. 👨‍💼**
-
-
-## 📜 License
-
-MIT — feel free to fork, star, and use in your portfolio.
-
-## 👨‍💻 About the Author
-Hey, I’m Amlan Mohanty, a Data Analyst & Content Creator.
-I break down complex data topics into simple, practical content that actually helps you land a job.
-
- ### 🚀 Stay Connected & Join my Data Community
-If you enjoyed this project and want to keep learning and growing as a data analyst, let’s stay in touch! I regularly share content around SQL, data analytics, portfolio projects, job tips, and more.
-
-🎥 YouTube: [Amlan Mohanty](https://www.youtube.com/@amlanmohanty1)
-- Beginner-friendly tutorials, real-world projects, job and career advice
-
-📺 Instagram: [datacareerschool](https://www.instagram.com/datacareerschool/)
-- Quick SQL tips, data memes, and behind-the-scenes content
-
-💼 LinkedIn: [Amlan Mohanty](https://www.linkedin.com/in/amlanmohanty1/)
-- Let’s connect professionally and grow your data career
-
-
-## 💡 Thanks for checking out the project! Your support means a lot! Feel free to star ⭐ this repo or share it with someone learning Data Analytics.🚀
+- Add a `requirements.txt` / `environment.yml` so the notebook runs without guessing which libraries are needed.
+- Parameterize the DB connection cells (see caveat above) instead of hardcoding credentials per-engine.
+- Export the 10 SQL query results as CSVs or a small results section in this README, so the findings are visible without opening Postgres or Power BI.
+- Add a short "how the dashboard maps to the SQL questions" section, since right now the `.pbix` and the `.sql` file aren't explicitly cross-referenced.
